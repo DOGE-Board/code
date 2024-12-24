@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { supabase } from './supabase'
 import DashboardCt from './components/DashboardCt.vue';
+import CallbackPage from './components/CallbackPage.vue';
 import ProposalCt from './components/ProposalCt.vue';
 import ProposalDetail from './components/ProposalDetail.vue';
 import Login from './components/Login.vue';
@@ -29,6 +30,12 @@ const routes = [
     name: 'ProposalDetail',
     component: ProposalDetail,
     //meta: { requiresAuth: true }
+  },  
+  {
+    path: '/callback',
+    name: 'Callback',
+    component: CallbackPage,
+    meta: { requiresAuth: true }
   },
   {
     path: '/:pathMatch(.*)*',

@@ -44,23 +44,22 @@ const error = ref(null)
 
 const handleOAuthLogin = async (provider) => {
   try {
-    loading.value = true
-    error.value = null
-    
-    const { data, error: authError } = await supabase.auth.signInWithOAuth({
-      provider: provider,
-      options: {
-        redirectTo: `${window.location.origin}/`
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: provider,
+            options: {
+                redirectTo: `${window.location.origin}/callback`,
+            },
+        });
+        
+        if (error) {
+          ElMessage.error('Login failed: ' + error.message);
+        } else {
+          ElMessage.success('Redirecting to login provider...');
+        }
+      } catch (err) {
+        ElMessage.error('An unexpected error occurred');
+        console.error(err);
       }
-    })
-
-    if (authError) throw authError
-    router.push('/')
-  } catch (err) {
-    error.value = err.message
-  } finally {
-    loading.value = false
-  }
 }
 </script>
 
