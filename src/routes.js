@@ -35,7 +35,7 @@ const routes = [
     path: '/callback',
     name: 'Callback',
     component: CallbackPage,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: false }
   },
   {
     path: '/:pathMatch(.*)*',
