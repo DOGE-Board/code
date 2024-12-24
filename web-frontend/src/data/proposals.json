@@ -1,0 +1,55 @@
+{
+  "proposals": [
+    {
+      "id": 1,
+      "name": "Carbon Tax Implementation",
+      "description": "Proposal to implement a carbon tax on major industrial emissions",
+      "upVotes": 245,
+      "downVotes": 123,
+      "favorArguments": [
+        "Reduces greenhouse gas emissions",
+        "Generates revenue for green initiatives",
+        "Encourages innovation in clean technology"
+      ],
+      "againstArguments": [
+        "May increase consumer prices",
+        "Could affect industrial competitiveness",
+        "Implementation costs are high"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Universal Basic Income",
+      "description": "Monthly basic income guarantee for all adult citizens",
+      "upVotes": 189,
+      "downVotes": 156,
+      "favorArguments": [
+        "Reduces poverty",
+        "Provides economic security",
+        "Simplifies welfare system"
+      ],
+      "againstArguments": [
+        "High cost to implement",
+        "May reduce work incentive",
+        "Potential inflationary effects"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Education Reform",
+      "description": "Comprehensive reform of the public education system",
+      "upVotes": 302,
+      "downVotes": 89,
+      "favorArguments": [
+        "Improves learning outcomes",
+        "Updates outdated curriculum",
+        "Addresses inequality in education"
+      ],
+      "againstArguments": [
+        "Requires significant funding",
+        "Implementation challenges",
+        "Teacher retraining needed"
+      ]
+    }
+  ]
+}
