@@ -6,15 +6,23 @@ export const proposals = ref([])
 export const fetchProposals = async () => {
   const { data, error } = await supabase
     .from('proposals')
-    .select('*')
-    .order('id', { ascending: true })
+    .select(`
+      *,
+      upVotes:proposal_votes(count).filter(vote_type.eq.up),
+      downVotes:proposal_votes(count).filter(vote_type.eq.down)
+    `)
+    .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Error fetching proposals:', error)
     return
   }
 
-  proposals.value = data
+  proposals.value = data.map(proposal => ({
+    ...proposal,
+    upVotes: proposal.upVotes[0]?.count || 0,
+    downVotes: proposal.downVotes[0]?.count || 0
+  }))
 }
 
 export const addProposal = async (proposal) => {
