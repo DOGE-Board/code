@@ -18,12 +18,12 @@
         <!-- <el-button class="oauth-button facebook" @click="handleOAuthLogin('facebook')">
           <i class="fab fa-facebook-f"></i>
           Facebook
-        </el-button>
+        </el-button> -->
 
         <el-button class="oauth-button twitter" @click="handleOAuthLogin('twitter')">
           <i class="fab fa-twitter"></i>
           X (Twitter)
-        </el-button> -->
+        </el-button>
       </div>
 
       <p class="terms">

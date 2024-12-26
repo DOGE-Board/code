@@ -8,8 +8,9 @@ export const fetchProposals = async () => {
     .from('proposals')
     .select(`
       *,
-      upVotes:proposal_votes(count).filter(vote_type.eq.up),
-      downVotes:proposal_votes(count).filter(vote_type.eq.down)
+      proposal_votes!inner (
+        vote_type
+      )
     `)
     .order('created_at', { ascending: false })
 
@@ -18,11 +19,14 @@ export const fetchProposals = async () => {
     return
   }
 
-  proposals.value = data.map(proposal => ({
-    ...proposal,
-    upVotes: proposal.upVotes[0]?.count || 0,
-    downVotes: proposal.downVotes[0]?.count || 0
-  }))
+  proposals.value = data.map(proposal => {
+    const votes = proposal.proposal_votes || []
+    return {
+      ...proposal,
+      upVotes: votes.filter(vote => vote.vote_type === 'up').length,
+      downVotes: votes.filter(vote => vote.vote_type === 'down').length
+    }
+  })
 }
 
 export const addProposal = async (proposal) => {

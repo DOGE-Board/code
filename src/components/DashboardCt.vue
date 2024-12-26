@@ -9,22 +9,21 @@
         style="width: 100%" 
         border
         @row-click="handleRowClick"
+        v-loading="loading"
       >
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="name" label="Proposal Name" />
-        <el-table-column label="Up Votes" width="120">
+        <el-table-column label="Votes" width="200">
           <template #default="{ row }">
             <div class="vote-cell">
-              <i class="fas fa-arrow-up vote-icon up"></i>
-              {{ row.upVotes }}
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="Down Votes" width="120">
-          <template #default="{ row }">
-            <div class="vote-cell">
-              <i class="fas fa-arrow-down vote-icon down"></i>
-              {{ row.downVotes }}
+              <div class="vote-count">
+                <i class="fas fa-arrow-up vote-icon up"></i>
+                {{ row.upVotes || 0 }}
+              </div>
+              <div class="vote-count">
+                <i class="fas fa-arrow-down vote-icon down"></i>
+                {{ row.downVotes || 0 }}
+              </div>
             </div>
           </template>
         </el-table-column>
@@ -38,6 +37,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Header from './Header.vue'
 import { proposals, fetchProposals } from '../data/proposals'
+import { supabase } from '../supabase'
 
 const router = useRouter()
 const loading = ref(true)
@@ -68,6 +68,12 @@ h1 {
 }
 
 .vote-cell {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.vote-count {
   display: flex;
   align-items: center;
   gap: 8px;
