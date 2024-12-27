@@ -27,7 +27,9 @@
       </div>
 
       <p class="terms">
-        By continuing, you agree to Legal AI Studio's Terms of Service and Privacy Policy
+          By continuing, you agree to Legal AI Studio's 
+          <router-link to="/terms-of-service">Terms of Service</router-link> and 
+          <router-link to="/privacy-policy">Privacy Policy</router-link>
       </p>
     </div>
   </div>
@@ -165,5 +167,13 @@ const handleOAuthLogin = async (provider) => {
   max-width: 400px;
   margin: 0 auto;
   line-height: 1.5;
+}
+.terms a {
+  color: #409eff;
+  text-decoration: none;
+}
+
+.terms a:hover {
+  text-decoration: underline;
 }
 </style>

@@ -38,6 +38,16 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/privacy-policy',
+    name: 'PrivacyPolicy',
+    component: () => import('./components/PrivacyPolicy.vue')
+  },
+  {
+    path: '/terms-of-service',
+    name: 'TermsOfService',
+    component: () => import('./components/TermsOfService.vue')
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/'
   }
