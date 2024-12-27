@@ -42,6 +42,34 @@
           <p>{{ proposal.againstArguments }}</p>
           
         </div>
+
+        <div class="proposal-section">
+          <h2>Comments</h2>
+          
+          <div class="comments-list">
+            <div v-for="comment in comments" :key="comment.id" class="comment">
+              <div class="comment-header">
+                <span class="comment-date">{{ new Date(comment.created_at).toLocaleDateString() }}</span>
+              </div>
+              <p class="comment-content">{{ comment.content }}</p>
+            </div>
+          </div>
+
+          <div v-if="user" class="comment-form">
+            <el-input
+              v-model="newComment"
+              type="textarea"
+              :rows="3"
+              placeholder="Write your comment..."
+            />
+            <el-button type="primary" @click="handleAddComment" :loading="commentLoading">
+              Add Comment
+            </el-button>
+          </div>
+          <div v-else class="login-prompt">
+            Please login to comment
+          </div>
+        </div>
       </template>
       <div v-else class="not-found">
         Proposal not found
@@ -61,6 +89,9 @@ import { ElMessage } from 'element-plus'
 const route = useRoute()
 const user = ref(null)
 const userVotes = ref({})
+const comments = ref([])
+const newComment = ref('')
+const commentLoading = ref(false)
 
 const proposal = computed(() => 
   proposals.value.find(p => p.id === parseInt(route.params.id))
@@ -74,7 +105,10 @@ onMounted(async () => {
     await fetchUserVotes()
   }
   
-  await fetchProposals()
+  await Promise.all([
+    fetchProposals(),
+    fetchComments()
+  ])
 })
 
 const fetchUserVotes = async () => {
@@ -125,6 +159,48 @@ const handleVote = async (proposalId, voteType) => {
     await fetchProposals()
   } catch (error) {
     ElMessage.error('Error while voting')
+  }
+}
+
+const fetchComments = async () => {
+  const { data, error } = await supabase
+    .from('proposal_comments')
+    .select(`*`)
+    .eq('proposal_id', route.params.id)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    ElMessage.error('Error fetching comments')
+    return
+  }
+
+  comments.value = data.map(comment => ({
+    ...comment,
+  }))
+}
+
+const handleAddComment = async () => {
+  if (!newComment.value.trim()) return
+  
+  commentLoading.value = true
+  try {
+    const { error } = await supabase
+      .from('proposal_comments')
+      .insert({
+        proposal_id: parseInt(route.params.id),
+        user_id: user.value.id,
+        content: newComment.value.trim()
+      })
+
+    if (error) throw error
+
+    newComment.value = ''
+    await fetchComments()
+    ElMessage.success('Comment added successfully')
+  } catch (error) {
+    ElMessage.error('Error adding comment')
+  } finally {
+    commentLoading.value = false
   }
 }
 </script>
@@ -192,5 +268,45 @@ h2 {
   font-size: 1.2rem;
   color: #666;
   margin-top: 2rem;
+}
+
+.comments-list {
+  margin-bottom: 1.5rem;
+}
+
+.comment {
+  border-bottom: 1px solid #eee;
+  padding: 1rem 0;
+}
+
+.comment:last-child {
+  border-bottom: none;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.comment-content {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.login-prompt {
+  text-align: center;
+  color: #666;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 4px;
 }
 </style> 
