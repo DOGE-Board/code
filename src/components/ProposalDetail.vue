@@ -34,43 +34,17 @@
         <div class="proposal-section">
           <h2>Arguments in Favor</h2>
           <p>{{ proposal.favorArguments }}</p>
-          
         </div>
 
         <div class="proposal-section">
           <h2>Arguments Against</h2>
           <p>{{ proposal.againstArguments }}</p>
-          
         </div>
 
-        <div class="proposal-section">
-          <h2>Comments</h2>
-          
-          <div class="comments-list">
-            <div v-for="comment in comments" :key="comment.id" class="comment">
-              <div class="comment-header">
-                <span class="comment-author">{{ comment.userEmail }}</span>
-                <span class="comment-date">{{ new Date(comment.created_at).toLocaleDateString() }}</span>
-              </div>
-              <p class="comment-content">{{ comment.content }}</p>
-            </div>
-          </div>
-
-          <div v-if="user" class="comment-form">
-            <el-input
-              v-model="newComment"
-              type="textarea"
-              :rows="3"
-              placeholder="Write your comment..."
-            />
-            <el-button type="primary" @click="handleAddComment" :loading="commentLoading">
-              Add Comment
-            </el-button>
-          </div>
-          <div v-else class="login-prompt">
-            Please login to comment
-          </div>
-        </div>
+        <Comments 
+          :proposal-id="proposal.id"
+          :user="user"
+        />
       </template>
       <div v-else class="not-found">
         Proposal not found
@@ -79,144 +53,94 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+<script>
+import { defineComponent } from 'vue'
 import Header from './Header.vue'
+import Comments from './Comments.vue'
 import { proposals, fetchProposals } from '../data/proposals'
 import { supabase } from '../supabase'
 import { ElMessage } from 'element-plus'
 
-const route = useRoute()
-const user = ref(null)
-const userVotes = ref({})
-const comments = ref([])
-const newComment = ref('')
-const commentLoading = ref(false)
-
-const proposal = computed(() => 
-  proposals.value.find(p => p.id === parseInt(route.params.id))
-)
-
-onMounted(async () => {
-  const { data: { user: currentUser } } = await supabase.auth.getUser()
-  user.value = currentUser
-  
-  if (currentUser) {
-    await fetchUserVotes()
-  }
-  
-  await Promise.all([
-    fetchProposals(),
-    fetchComments()
-  ])
-})
-
-const fetchUserVotes = async () => {
-  const { data: votes } = await supabase
-    .from('proposal_votes')
-    .select('proposal_id, vote_type')
-    .eq('user_id', user.value.id)
-
-  if (votes) {
-    votes.forEach(vote => {
-      userVotes.value[vote.proposal_id] = vote.vote_type
-    })
-  }
-}
-
-const getUserVote = (proposalId) => {
-  return userVotes.value[proposalId]
-}
-
-const handleVote = async (proposalId, voteType) => {
-  if (!user.value) return
-  
-  const currentVote = getUserVote(proposalId)
-  
-  try {
-    if (currentVote === voteType) {
-      // Remove vote
-      await supabase
-        .from('proposal_votes')
-        .delete()
-        .eq('proposal_id', proposalId)
-        .eq('user_id', user.value.id)
-      
-      delete userVotes.value[proposalId]
-    } else {
-      // Upsert vote
-      await supabase
-        .from('proposal_votes')
-        .upsert({
-          proposal_id: proposalId,
-          user_id: user.value.id,
-          vote_type: voteType
-        })
-      
-      userVotes.value[proposalId] = voteType
+export default defineComponent({
+  name: 'ProposalDetail',
+  components: {
+    Header,
+    Comments
+  },
+  data() {
+    return {
+      user: null,
+      userVotes: {}
+    }
+  },
+  computed: {
+    proposal() {
+      return proposals.value.find(p => p.id === parseInt(this.$route.params.id))
+    }
+  },
+  async mounted() {
+    const { data: { user: currentUser } } = await supabase.auth.getUser()
+    this.user = currentUser
+    
+    if (currentUser) {
+      await this.fetchUserVotes()
     }
     
-    await fetchProposals()
-  } catch (error) {
-    ElMessage.error('Error while voting')
-  }
-}
+    await Promise.all([
+      fetchProposals()
+    ])
+  },
+  methods: {
+    async fetchUserVotes() {
+      const { data: votes } = await supabase
+        .from('proposal_votes')
+        .select('proposal_id, vote_type')
+        .eq('user_id', this.user.id)
 
-const fetchComments = async () => {
-  const { data, error } = await supabase
-    .from('proposal_comments')
-    .select(`*`)
-    .eq('proposal_id', route.params.id)
-    .order('created_at', { ascending: false })
-
-
-    
-  if (error) {
-    ElMessage.error('Error fetching comments')
-    return
-  }
-
-  // Fetch user info for each comment
-  const commentsWithUserInfo = await Promise.all(
-    data.map(async (comment) => {
-      const { data: userData, error: userError } = await supabase
-        .rpc('get_user_info_by_id', {
-          user_id: comment.user_id
+      if (votes) {
+        votes.forEach(vote => {
+          this.userVotes[vote.proposal_id] = vote.vote_type
         })
-      return {
-        ...comment,
-       userEmail: userError ? 'Unknown User' : userData[0].email
       }
-    })
-  )
-  comments.value = commentsWithUserInfo
-}
+    },
 
-const handleAddComment = async () => {
-  if (!newComment.value.trim()) return
-  
-  commentLoading.value = true
-  try {
-    const { error } = await supabase
-      .from('proposal_comments')
-      .insert({
-        proposal_id: parseInt(route.params.id),
-        user_id: user.value.id,
-        content: newComment.value.trim()
-      })
+    getUserVote(proposalId) {
+      return this.userVotes[proposalId]
+    },
 
-    if (error) throw error
-
-    newComment.value = ''
-    await fetchComments()
-    ElMessage.success('Comment added successfully')
-  } catch (error) {
-    ElMessage.error('Error adding comment')
-  } finally {
-    commentLoading.value = false
+    async handleVote(proposalId, voteType) {
+      if (!this.user) return
+      
+      const currentVote = this.getUserVote(proposalId)
+      
+      try {
+        if (currentVote === voteType) {
+          await supabase
+            .from('proposal_votes')
+            .delete()
+            .eq('proposal_id', proposalId)
+            .eq('user_id', this.user.id)
+          
+          delete this.userVotes[proposalId]
+        } else {
+          await supabase
+            .from('proposal_votes')
+            .upsert({
+              proposal_id: proposalId,
+              user_id: this.user.id,
+              vote_type: voteType
+            })
+          
+          this.userVotes[proposalId] = voteType
+        }
+        
+        await fetchProposals()
+      } catch (error) {
+        ElMessage.error('Error while voting')
+      }
+    }
   }
-}
+})
 </script>
 
 <style scoped>
