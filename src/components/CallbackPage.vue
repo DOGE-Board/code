@@ -6,7 +6,7 @@ export default {
     const { data, error } = await supabase.auth.getSession();
     if (data?.session) {
       console.log('User session:', data.session);
-      this.$router.push('/proposals');
+      this.$router.push('/');
     } else if (error) {
       console.error('Error fetching session:', error.message);
       this.$router.push('/login');

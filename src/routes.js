@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from "vue-router";
 import { supabase } from './supabase'
 import DashboardCt from './components/DashboardCt.vue';
 import CallbackPage from './components/CallbackPage.vue';
-import ProposalCt from './components/ProposalCt.vue';
 import ProposalDetail from './components/ProposalDetail.vue';
 import Login from './components/Login.vue';
 
@@ -18,12 +17,6 @@ const routes = [
     path: '/',
     name: 'Dashboard',
     component: DashboardCt
-  },
-  {
-    path: '/proposals',
-    name: 'Proposals',
-    component: ProposalCt,
-    meta: { requiresAuth: true }
   },
   {
     path: '/proposal/:id',

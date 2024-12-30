@@ -8,7 +8,7 @@ export const fetchProposals = async () => {
     .from('proposals')
     .select(`
       *,
-      proposal_votes!inner (
+      proposal_votes (
         vote_type
       )
     `)

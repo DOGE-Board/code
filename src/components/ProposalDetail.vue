@@ -35,11 +35,6 @@
           :proposal-id="proposal.id"
           :user="user"
         />
-
-        <Comments 
-          :proposal-id="proposal.id"
-          :user="user"
-        />
       </template>
       <div v-else class="not-found">
         Proposal not found
@@ -52,7 +47,6 @@
 import { defineComponent } from 'vue'
 import Header from './Header.vue'
 import ProposalArguments from './ProposalArguments.vue'
-import Comments from './Comments.vue'
 import { proposals, fetchProposals } from '../data/proposals'
 import { supabase } from '../supabase'
 import { ElMessage } from 'element-plus'
@@ -61,7 +55,6 @@ export default defineComponent({
   name: 'ProposalDetail',
   components: {
     Header,
-    Comments,
     ProposalArguments
   },
   data() {
