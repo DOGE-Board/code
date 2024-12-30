@@ -49,6 +49,7 @@
           <div class="comments-list">
             <div v-for="comment in comments" :key="comment.id" class="comment">
               <div class="comment-header">
+                <span class="comment-author">{{ comment.userEmail }}</span>
                 <span class="comment-date">{{ new Date(comment.created_at).toLocaleDateString() }}</span>
               </div>
               <p class="comment-content">{{ comment.content }}</p>
@@ -169,14 +170,27 @@ const fetchComments = async () => {
     .eq('proposal_id', route.params.id)
     .order('created_at', { ascending: false })
 
+
+    
   if (error) {
     ElMessage.error('Error fetching comments')
     return
   }
 
-  comments.value = data.map(comment => ({
-    ...comment,
-  }))
+  // Fetch user info for each comment
+  const commentsWithUserInfo = await Promise.all(
+    data.map(async (comment) => {
+      const { data: userData, error: userError } = await supabase
+        .rpc('get_user_info_by_id', {
+          user_id: comment.user_id
+        })
+      return {
+        ...comment,
+       userEmail: userError ? 'Unknown User' : userData[0].email
+      }
+    })
+  )
+  comments.value = commentsWithUserInfo
 }
 
 const handleAddComment = async () => {
@@ -308,5 +322,10 @@ h2 {
   padding: 1rem;
   background: #f9f9f9;
   border-radius: 4px;
+}
+
+.comment-author {
+  font-weight: 500;
+  color: #409EFF;
 }
 </style> 
