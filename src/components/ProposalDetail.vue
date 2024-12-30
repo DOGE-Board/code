@@ -31,15 +31,10 @@
           <p>{{ proposal.description }}</p>
         </div>
 
-        <div class="proposal-section">
-          <h2>Arguments in Favor</h2>
-          <p>{{ proposal.favorArguments }}</p>
-        </div>
-
-        <div class="proposal-section">
-          <h2>Arguments Against</h2>
-          <p>{{ proposal.againstArguments }}</p>
-        </div>
+        <ProposalArguments 
+          :proposal-id="proposal.id"
+          :user="user"
+        />
 
         <Comments 
           :proposal-id="proposal.id"
@@ -56,6 +51,7 @@
 <script>
 import { defineComponent } from 'vue'
 import Header from './Header.vue'
+import ProposalArguments from './ProposalArguments.vue'
 import Comments from './Comments.vue'
 import { proposals, fetchProposals } from '../data/proposals'
 import { supabase } from '../supabase'
@@ -65,7 +61,8 @@ export default defineComponent({
   name: 'ProposalDetail',
   components: {
     Header,
-    Comments
+    Comments,
+    ProposalArguments
   },
   data() {
     return {
