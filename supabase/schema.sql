@@ -152,6 +152,13 @@ CREATE POLICY "Users can update their own arguments"
     TO authenticated
     USING (auth.uid() = user_id);
 
+    
+CREATE POLICY "Users can remove their arguments"
+    ON proposal_arguments
+    FOR DELETE
+    TO authenticated
+    USING (auth.uid() = user_id);
+
 -- Create trigger for updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$

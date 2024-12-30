@@ -2,7 +2,7 @@
   <div>
     <div class="proposal-section">
       <h2>Arguments in Favor</h2>
-      <div v-if="user && !userFavorArgument" class="add-argument">
+      <div v-if="user && !userFavorArgument && !userAgainstArgument" class="add-argument">
         <el-input
           v-model="newFavorArgument"
           type="textarea"
@@ -16,9 +16,15 @@
       <div v-else-if="user && userFavorArgument" class="user-argument">
         <div class="argument-header">
           <span>Your Argument:</span>
-          <el-button type="text" @click="editArgument('favor')">Edit</el-button>
+          <div class="argument-actions">
+            <el-button type="text" @click="editArgument('favor')">Edit</el-button>
+            <el-button type="text" class="delete-btn" @click="deleteArgument('favor')">Delete</el-button>
+          </div>
         </div>
         <p>{{ userFavorArgument.content }}</p>
+      </div>
+      <div v-else-if="user && userAgainstArgument" class="user-argument disabled">
+        <p class="info-text">You have already provided an argument against this proposal</p>
       </div>
       <div class="arguments-list">
         <div v-for="arg in favorArguments" :key="arg.id" class="argument">
@@ -33,7 +39,7 @@
 
     <div class="proposal-section">
       <h2>Arguments Against</h2>
-      <div v-if="user && !userAgainstArgument" class="add-argument">
+      <div v-if="user && !userAgainstArgument && !userFavorArgument" class="add-argument">
         <el-input
           v-model="newAgainstArgument"
           type="textarea"
@@ -48,8 +54,12 @@
         <div class="argument-header">
           <span>Your Argument:</span>
           <el-button type="text" @click="editArgument('against')">Edit</el-button>
+          <el-button type="text" class="delete-btn" @click="deleteArgument('against')">Delete</el-button>
         </div>
         <p>{{ userAgainstArgument.content }}</p>
+      </div>
+      <div v-else-if="user && userFavorArgument" class="user-argument disabled">
+        <p class="info-text">You have already provided an argument in favor of this proposal</p>
       </div>
       <div class="arguments-list">
         <div v-for="arg in againstArguments" :key="arg.id" class="argument">
@@ -150,8 +160,19 @@ export default defineComponent({
       this.againstArguments = argumentsWithUserInfo.filter(arg => arg.argument_type === 'against')
 
       if (this.user) {
-        this.userFavorArgument = this.favorArguments.find(arg => arg.user_id === this.user.id)
-        this.userAgainstArgument = this.againstArguments.find(arg => arg.user_id === this.user.id)
+        const userArgument = argumentsWithUserInfo.find(arg => arg.user_id === this.user.id)
+        if (userArgument) {
+          if (userArgument.argument_type === 'favor') {
+            this.userFavorArgument = userArgument
+            this.userAgainstArgument = null
+          } else {
+            this.userFavorArgument = null
+            this.userAgainstArgument = userArgument
+          }
+        } else {
+          this.userFavorArgument = null
+          this.userAgainstArgument = null
+        }
       }
     },
 
@@ -201,8 +222,11 @@ export default defineComponent({
 
         const { error } = await supabase
           .from('proposal_arguments')
-          .update({ content: this.editContent.trim() })
+          .update({ 
+            content: this.editContent.trim(),
+          })
           .eq('id', argument.id)
+          .eq('argument_type', argument.argument_type)
 
         if (error) throw error
 
@@ -213,6 +237,27 @@ export default defineComponent({
         ElMessage.error('Error updating argument')
       } finally {
         this.editLoading = false
+      }
+    },
+
+    async deleteArgument(type) {
+      try {
+        const argument = type === 'favor' 
+          ? this.userFavorArgument 
+          : this.userAgainstArgument
+
+        const { error } = await supabase
+          .from('proposal_arguments')
+          .delete()
+          .eq('id', argument.id)
+          .eq('user_id', this.user.id)
+
+        if (error) throw error
+
+        await this.fetchArguments()
+        ElMessage.success('Argument deleted successfully')
+      } catch (error) {
+        ElMessage.error('Error deleting argument')
       }
     }
   }
@@ -269,5 +314,27 @@ export default defineComponent({
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.user-argument.disabled {
+  background: #f5f5f5;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.info-text {
+  color: #666;
+  margin: 0;
+  font-style: italic;
+}
+
+.argument-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.delete-btn {
+  color: #F56C6C;
 }
 </style> 
