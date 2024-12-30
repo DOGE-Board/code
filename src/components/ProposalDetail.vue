@@ -27,7 +27,7 @@
         </div>
 
         <div class="proposal-section">
-          <h2>Description</h2>
+          <h3>Description</h3>
           <p>{{ proposal.description }}</p>
         </div>
 

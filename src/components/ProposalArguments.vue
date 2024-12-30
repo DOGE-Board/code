@@ -1,96 +1,84 @@
 <template>
   <div>
-    <div class="proposal-section">
-      <h2>Arguments in Favor</h2>
-      <div v-if="user && !userFavorArgument && !userAgainstArgument" class="add-argument">
+    <!-- Single Form -->
+    <div v-if="user" class="argument-form-section">
+      <h3>{{ argumentForm.id ? 'Your Argument' : 'Your Argument' }}</h3>
+      <div v-if="!userHasArgument || argumentForm.id" class="argument-form">
+        <el-select 
+          v-model="argumentForm.type" 
+          placeholder="Select argument type"
+        >
+          <el-option label="In Favor" value="favor" />
+          <el-option label="Against" value="against" />
+        </el-select>
         <el-input
-          v-model="newFavorArgument"
+          v-model="argumentForm.content"
           type="textarea"
           :rows="3"
-          placeholder="Add your argument in favor..."
+          placeholder="Write your argument..."
         />
-        <el-button type="primary" @click="handleAddArgument('favor')" :loading="favorLoading">
-          Add Argument
-        </el-button>
-      </div>
-      <div v-else-if="user && userFavorArgument" class="user-argument">
-        <div class="argument-header">
-          <span>Your Argument:</span>
-          <div class="argument-actions">
-            <el-button type="text" @click="editArgument('favor')">Edit</el-button>
-            <el-button type="text" class="delete-btn" @click="deleteArgument('favor')">Delete</el-button>
-          </div>
-        </div>
-        <p>{{ userFavorArgument.content }}</p>
-      </div>
-      <div v-else-if="user && userAgainstArgument" class="user-argument disabled">
-        <p class="info-text">You have already provided an argument against this proposal</p>
-      </div>
-      <div class="arguments-list">
-        <div v-for="arg in favorArguments" :key="arg.id" class="argument">
-          <div class="argument-header">
-            <span class="argument-author">{{ arg.userEmail }}</span>
-            <span class="argument-date">{{ new Date(arg.created_at).toLocaleDateString() }}</span>
-          </div>
-          <p class="argument-content">{{ arg.content }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="proposal-section">
-      <h2>Arguments Against</h2>
-      <div v-if="user && !userAgainstArgument && !userFavorArgument" class="add-argument">
-        <el-input
-          v-model="newAgainstArgument"
-          type="textarea"
-          :rows="3"
-          placeholder="Add your argument against..."
-        />
-        <el-button type="primary" @click="handleAddArgument('against')" :loading="againstLoading">
-          Add Argument
-        </el-button>
-      </div>
-      <div v-else-if="user && userAgainstArgument" class="user-argument">
-        <div class="argument-header">
-          <span>Your Argument:</span>
-          <el-button type="text" @click="editArgument('against')">Edit</el-button>
-          <el-button type="text" class="delete-btn" @click="deleteArgument('against')">Delete</el-button>
-        </div>
-        <p>{{ userAgainstArgument.content }}</p>
-      </div>
-      <div v-else-if="user && userFavorArgument" class="user-argument disabled">
-        <p class="info-text">You have already provided an argument in favor of this proposal</p>
-      </div>
-      <div class="arguments-list">
-        <div v-for="arg in againstArguments" :key="arg.id" class="argument">
-          <div class="argument-header">
-            <span class="argument-author">{{ arg.userEmail }}</span>
-            <span class="argument-date">{{ new Date(arg.created_at).toLocaleDateString() }}</span>
-          </div>
-          <p class="argument-content">{{ arg.content }}</p>
-        </div>
-      </div>
-    </div>
-
-    <el-dialog
-      v-model="showEditDialog"
-      :title="`Edit ${editingType === 'favor' ? 'Favor' : 'Against'} Argument`"
-      width="50%"
-    >
-      <el-input
-        v-model="editContent"
-        type="textarea"
-        :rows="3"
-      />
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="showEditDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="handleUpdateArgument" :loading="editLoading">
-            Update
+        <div class="form-actions">
+          <el-button 
+            v-if="argumentForm.id" 
+            @click="resetForm"
+          >
+            Cancel
           </el-button>
-        </span>
-      </template>
-    </el-dialog>
+          <el-button 
+            type="primary" 
+            @click="handleSubmit" 
+            :loading="isLoading"
+          >
+            {{ argumentForm.id ? 'Update' : 'Add' }} Argument
+          </el-button>
+        </div>
+      </div>
+      <div v-else-if="userHasArgument" class="user-argument">
+        <div class="argument-header">
+          <span>Your Argument ({{ userArgument.argument_type === 'favor' ? 'In Favor' : 'Against' }}):</span>
+          <div class="argument-actions">
+            <el-button type="text" @click="startEdit">Edit</el-button>
+            <el-button type="text" class="delete-btn" @click="deleteArgument">Delete</el-button>
+          </div>
+        </div>
+        <p>{{ userArgument.content }}</p>
+      </div>
+    </div>
+
+    <!-- Arguments Display -->
+    <div class="arguments-display">
+      <div class="proposal-section">
+        <h3>Arguments in Favor</h3>
+        <div class="arguments-list">
+          <div v-for="arg in favorArguments" :key="arg.id" class="argument">
+            <div class="argument-header">
+              <span class="argument-author">{{ arg.userEmail }}</span>
+              <span class="argument-date">{{ new Date(arg.created_at).toLocaleDateString() }}</span>
+            </div>
+            <p class="argument-content">{{ arg.content }}</p>
+          </div>
+          <div v-if="!favorArguments.length" class="no-arguments">
+            No arguments in favor yet
+          </div>
+        </div>
+      </div>
+
+      <div class="proposal-section">
+        <h3>Arguments Against</h3>
+        <div class="arguments-list">
+          <div v-for="arg in againstArguments" :key="arg.id" class="argument">
+            <div class="argument-header">
+              <span class="argument-author">{{ arg.userEmail }}</span>
+              <span class="argument-date">{{ new Date(arg.created_at).toLocaleDateString() }}</span>
+            </div>
+            <p class="argument-content">{{ arg.content }}</p>
+          </div>
+          <div v-if="!againstArguments.length" class="no-arguments">
+            No arguments against yet
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -115,16 +103,21 @@ export default defineComponent({
     return {
       favorArguments: [],
       againstArguments: [],
-      newFavorArgument: '',
-      newAgainstArgument: '',
-      favorLoading: false,
-      againstLoading: false,
-      showEditDialog: false,
-      editingType: null,
-      editContent: '',
-      editLoading: false,
-      userFavorArgument: null,
-      userAgainstArgument: null
+      argumentForm: {
+        type: 'favor',
+        content: '',
+        id: null
+      },
+      isLoading: false
+    }
+  },
+  computed: {
+    userArgument() {
+      return [...this.favorArguments, ...this.againstArguments]
+        .find(arg => arg.user_id === this.user?.id)
+    },
+    userHasArgument() {
+      return !!this.userArgument
     }
   },
   mounted() {
@@ -158,98 +151,72 @@ export default defineComponent({
 
       this.favorArguments = argumentsWithUserInfo.filter(arg => arg.argument_type === 'favor')
       this.againstArguments = argumentsWithUserInfo.filter(arg => arg.argument_type === 'against')
+    },
 
-      if (this.user) {
-        const userArgument = argumentsWithUserInfo.find(arg => arg.user_id === this.user.id)
-        if (userArgument) {
-          if (userArgument.argument_type === 'favor') {
-            this.userFavorArgument = userArgument
-            this.userAgainstArgument = null
-          } else {
-            this.userFavorArgument = null
-            this.userAgainstArgument = userArgument
-          }
+    async handleSubmit() {
+      if (!this.argumentForm.content.trim()) return
+
+      this.isLoading = true
+      try {
+        if (this.argumentForm.id) {
+          const { error } = await supabase
+            .from('proposal_arguments')
+            .update({ 
+              content: this.argumentForm.content.trim(),
+              argument_type: this.argumentForm.type
+            })
+            .eq('id', this.argumentForm.id)
+            .eq('user_id', this.user.id)
+            //.eq('argument_type', this.userArgument.argument_type)
+
+          if (error) throw error
+          ElMessage.success('Argument updated successfully')
         } else {
-          this.userFavorArgument = null
-          this.userAgainstArgument = null
+          const { error } = await supabase
+            .from('proposal_arguments')
+            .insert({
+              proposal_id: parseInt(this.proposalId),
+              user_id: this.user.id,
+              argument_type: this.argumentForm.type,
+              content: this.argumentForm.content.trim()
+            })
+
+          if (error) throw error
+          ElMessage.success('Argument added successfully')
         }
-      }
-    },
 
-    async handleAddArgument(type) {
-      const content = type === 'favor' ? this.newFavorArgument.trim() : this.newAgainstArgument.trim()
-      if (!content) return
-
-      const loading = type === 'favor' ? 'favorLoading' : 'againstLoading'
-      this[loading] = true
-
-      try {
-        const { error } = await supabase
-          .from('proposal_arguments')
-          .insert({
-            proposal_id: parseInt(this.proposalId),
-            user_id: this.user.id,
-            argument_type: type,
-            content
-          })
-
-        if (error) throw error
-
-        type === 'favor' ? this.newFavorArgument = '' : this.newAgainstArgument = ''
+        this.resetForm()
         await this.fetchArguments()
-        ElMessage.success('Argument added successfully')
       } catch (error) {
-        ElMessage.error('Error adding argument')
+        ElMessage.error(`Error ${this.argumentForm.id ? 'updating' : 'adding'} argument`)
       } finally {
-        this[loading] = false
+        this.isLoading = false
       }
     },
 
-    editArgument(type) {
-      this.editingType = type
-      this.editContent = type === 'favor' 
-        ? this.userFavorArgument.content 
-        : this.userAgainstArgument.content
-      this.showEditDialog = true
-    },
-
-    async handleUpdateArgument() {
-      this.editLoading = true
-      try {
-        const argument = this.editingType === 'favor' 
-          ? this.userFavorArgument 
-          : this.userAgainstArgument
-
-        const { error } = await supabase
-          .from('proposal_arguments')
-          .update({ 
-            content: this.editContent.trim(),
-          })
-          .eq('id', argument.id)
-          .eq('argument_type', argument.argument_type)
-
-        if (error) throw error
-
-        this.showEditDialog = false
-        await this.fetchArguments()
-        ElMessage.success('Argument updated successfully')
-      } catch (error) {
-        ElMessage.error('Error updating argument')
-      } finally {
-        this.editLoading = false
+    startEdit() {
+      const currentArg = this.userArgument
+      this.argumentForm = {
+        type: currentArg.argument_type,
+        content: currentArg.content,
+        id: currentArg.id
       }
     },
 
-    async deleteArgument(type) {
-      try {
-        const argument = type === 'favor' 
-          ? this.userFavorArgument 
-          : this.userAgainstArgument
+    resetForm() {
+      this.argumentForm = {
+        type: 'favor',
+        content: '',
+        id: null
+      }
+    },
 
+    async deleteArgument() {
+      try {
         const { error } = await supabase
           .from('proposal_arguments')
           .delete()
-          .eq('id', argument.id)
+          .eq('id', this.userArgument.id)
           .eq('user_id', this.user.id)
 
         if (error) throw error
@@ -265,6 +232,43 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.argument-form-section {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+}
+
+.argument-form-section h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.argument-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.el-select {
+  width: 100%;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.arguments-display {
+  display: flex;
+  gap: 2rem;
+}
+
+.proposal-section {
+  flex: 1;
+}
+
 .arguments-list {
   margin-top: 1rem;
 }
@@ -296,37 +300,11 @@ export default defineComponent({
   color: #409EFF;
 }
 
-.add-argument {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
 .user-argument {
-  background: #f8f9fa;
+  background: #fff;
   padding: 1rem;
   border-radius: 4px;
-  margin-bottom: 1.5rem;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.user-argument.disabled {
-  background: #f5f5f5;
-  padding: 1rem;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-}
-
-.info-text {
-  color: #666;
-  margin: 0;
-  font-style: italic;
+  border: 1px solid #dcdfe6;
 }
 
 .argument-actions {
@@ -336,5 +314,13 @@ export default defineComponent({
 
 .delete-btn {
   color: #F56C6C;
+}
+
+.no-arguments {
+  color: #909399;
+  text-align: center;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 4px;
 }
 </style> 
