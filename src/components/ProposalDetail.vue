@@ -5,27 +5,6 @@
       <template v-if="proposal">
         <h1>{{ proposal.name }}</h1>
         
-        <div class="proposal-stats">
-          <el-button 
-            :type="getUserVote(proposal.id) === 'up' ? 'success' : 'default'"
-            size="large" 
-            @click="handleVote(proposal.id, 'up')"
-            :disabled="!user"
-          >
-            <i class="fas fa-arrow-up"></i>
-            <span>{{ proposal.upVotes }} Up Votes</span>
-          </el-button>
-          <el-button 
-            :type="getUserVote(proposal.id) === 'down' ? 'danger' : 'default'"
-            size="large" 
-            @click="handleVote(proposal.id, 'down')"
-            :disabled="!user"
-          >
-            <i class="fas fa-arrow-down"></i>
-            <span>{{ proposal.downVotes }} Down Votes</span>
-          </el-button>
-        </div>
-
         <div class="proposal-section">
           <h3>Description</h3>
           <p>{{ proposal.description }}</p>
@@ -198,37 +177,6 @@ h2 {
   margin-top: 2rem;
 }
 
-.comments-list {
-  margin-bottom: 1.5rem;
-}
-
-.comment {
-  border-bottom: 1px solid #eee;
-  padding: 1rem 0;
-}
-
-.comment:last-child {
-  border-bottom: none;
-}
-
-.comment-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.comment-content {
-  margin: 0;
-  white-space: pre-wrap;
-}
-
-.comment-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
 
 .login-prompt {
   text-align: center;
