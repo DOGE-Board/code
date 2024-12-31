@@ -1,26 +1,16 @@
 <template>
   <div class="arguments-container">
     <!-- Add Argument Button -->
-    <div v-if="user" class="argument-form-section">
+   
       <el-button 
-        v-if="!userHasArgument" 
+        v-if="!userHasArgument && user" 
         type="primary" 
         @click="showArgumentModal = true"
       >
         <i class="fas fa-plus"></i> Add Your Argument
       </el-button>
       
-      <div v-else-if="userHasArgument" class="user-argument">
-        <div class="argument-header">
-          <span>Your Argument ({{ userArgument.argument_type === 'favor' ? 'In Favor' : 'Against' }})</span>
-          <div class="argument-actions">
-            <el-button type="text" @click="startEdit"><i class="fas fa-edit"></i></el-button>
-            <el-button type="text" class="delete-btn" @click="deleteArgument"><i class="fas fa-trash"></i></el-button>
-          </div>
-        </div>
-        <p>{{ userArgument.content }}</p>
-      </div>
-    </div>
+      
 
     <!-- Arguments Display -->
     <div class="arguments-grid">
@@ -33,8 +23,18 @@
           <div class="arguments-list">
             <div v-for="arg in favorArguments" :key="arg.id" class="argument-card">
               <div class="argument-header">
-                <span class="argument-author">{{ arg.userEmail }}</span>
-                <span class="argument-date">{{ formatDate(arg.created_at) }}</span>
+                <div class="argument-meta">
+                  <span class="argument-author">{{ arg.userEmail }}</span>
+                  <span class="argument-date">{{ formatDate(arg.created_at) }}</span>
+                </div>
+                <div v-if="user && user.id === arg.user_id" class="argument-actions">
+                  <el-button type="text" @click="startEdit(arg)">
+                    <i class="fas fa-edit"></i>
+                  </el-button>
+                  <el-button type="text" class="delete-btn" @click="deleteArgument(arg)">
+                    <i class="fas fa-trash"></i>
+                  </el-button>
+                </div>
               </div>
               <p class="argument-content">{{ arg.content }}</p>
             </div>
@@ -55,8 +55,18 @@
           <div class="arguments-list">
             <div v-for="arg in againstArguments" :key="arg.id" class="argument-card">
               <div class="argument-header">
-                <span class="argument-author">{{ arg.userEmail }}</span>
-                <span class="argument-date">{{ formatDate(arg.created_at) }}</span>
+                <div class="argument-meta">
+                  <span class="argument-author">{{ arg.userEmail }}</span>
+                  <span class="argument-date">{{ formatDate(arg.created_at) }}</span>
+                </div>
+                <div v-if="user && user.id === arg.user_id" class="argument-actions">
+                  <el-button type="text" @click="startEdit(arg)">
+                    <i class="fas fa-edit"></i>
+                  </el-button>
+                  <el-button type="text" class="delete-btn" @click="deleteArgument(arg)">
+                    <i class="fas fa-trash"></i>
+                  </el-button>
+                </div>
               </div>
               <p class="argument-content">{{ arg.content }}</p>
             </div>
@@ -233,12 +243,11 @@ export default defineComponent({
       }
     },
 
-    startEdit() {
-      const currentArg = this.userArgument
+    startEdit(arg) {
       this.argumentForm = {
-        type: currentArg.argument_type,
-        content: currentArg.content,
-        id: currentArg.id
+        type: arg.argument_type,
+        content: arg.content,
+        id: arg.id
       }
       this.showArgumentModal = true
     },
@@ -256,12 +265,12 @@ export default defineComponent({
       }
     },
 
-    async deleteArgument() {
+    async deleteArgument(arg) {
       try {
         const { error } = await supabase
           .from('proposal_arguments')
           .delete()
-          .eq('id', this.userArgument.id)
+          .eq('id', arg.id)
           .eq('user_id', this.user.id)
 
         if (error) throw error
@@ -332,6 +341,11 @@ export default defineComponent({
   border-radius: 6px;
   padding: 1rem;
   margin-bottom: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.argument-card:hover {
+  background: #f0f2f5;
 }
 
 .argument-card:last-child {
@@ -341,6 +355,7 @@ export default defineComponent({
 .argument-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
 }
@@ -415,5 +430,16 @@ export default defineComponent({
   .arguments-list {
     max-height: 400px;
   }
+}
+
+.argument-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.argument-actions {
+  display: flex;
+  gap: 0.5rem;
 }
 </style> 
