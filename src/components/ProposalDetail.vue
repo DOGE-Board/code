@@ -59,10 +59,9 @@
             </el-form-item>
             
             <el-form-item label="Description" required>
-              <el-input
+              <RichTextEditor
                 v-model="editForm.description"
-                type="textarea"
-                :rows="3"
+                placeholder="Enter proposal description..."
               />
             </el-form-item>
           </el-form>
@@ -91,12 +90,14 @@ import ProposalArguments from './ProposalArguments.vue'
 import { proposals, fetchProposals } from '../data/proposals'
 import { supabase } from '../supabase'
 import { ElMessage } from 'element-plus'
+import RichTextEditor from './RichTextEditor.vue'
 
 export default defineComponent({
   name: 'ProposalDetail',
   components: {
     Header,
-    ProposalArguments
+    ProposalArguments,
+    RichTextEditor
   },
   data() {
     return {
@@ -407,5 +408,9 @@ export default defineComponent({
   .proposal-header h1 {
     font-size: 1.5rem;
   }
+}
+
+:deep(.rich-text-editor) {
+  margin-bottom: 1rem;
 }
 </style> 
