@@ -31,13 +31,13 @@
               <p><b>{{ proposal.name }}</b></p>
               <div class="description" v-html="sanitizedDescription"></div>
             </div>
-            <el-button 
-              v-if="user && user.id === proposal.user_id" 
+           
+             <el-link v-if="user && user.id === proposal.user_id" 
               type="primary" 
-              @click="showEditModal = true"
-            >
-              Edit Proposal
-            </el-button>
+              @click="showEditModal = true"  ><i class="fas fa-edit"></i>
+            </el-link>
+              
+            
           </div>
         </div>
 

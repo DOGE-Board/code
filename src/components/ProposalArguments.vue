@@ -1,44 +1,21 @@
 <template>
-  <div>
-    <!-- Single Form -->
+  <div class="arguments-container">
+    <!-- Add Argument Button -->
     <div v-if="user" class="argument-form-section">
-      <h4>{{ argumentForm.id ? 'Your Argument' : 'Your Argument' }}</h4>
-      <div v-if="!userHasArgument || argumentForm.id" class="argument-form">
-        <el-select 
-          v-model="argumentForm.type" 
-          placeholder="Select argument type"
-        >
-          <el-option label="In Favor" value="favor" />
-          <el-option label="Against" value="against" />
-        </el-select>
-        <el-input
-          v-model="argumentForm.content"
-          type="textarea"
-          :rows="3"
-          placeholder="Write your argument..."
-        />
-        <div class="form-actions">
-          <el-button 
-            v-if="argumentForm.id" 
-            @click="resetForm"
-          >
-            Cancel
-          </el-button>
-          <el-button 
-            type="primary" 
-            @click="handleSubmit" 
-            :loading="isLoading"
-          >
-            {{ argumentForm.id ? 'Update' : 'Add' }} Argument
-          </el-button>
-        </div>
-      </div>
+      <el-button 
+        v-if="!userHasArgument" 
+        type="primary" 
+        @click="showArgumentModal = true"
+      >
+        <i class="fas fa-plus"></i> Add Your Argument
+      </el-button>
+      
       <div v-else-if="userHasArgument" class="user-argument">
         <div class="argument-header">
-          <span>Your Argument ({{ userArgument.argument_type === 'favor' ? 'In Favor' : 'Against' }}):</span>
+          <span>Your Argument ({{ userArgument.argument_type === 'favor' ? 'In Favor' : 'Against' }})</span>
           <div class="argument-actions">
-            <el-button type="text" @click="startEdit">Edit</el-button>
-            <el-button type="text" class="delete-btn" @click="deleteArgument">Delete</el-button>
+            <el-button type="text" @click="startEdit"><i class="fas fa-edit"></i></el-button>
+            <el-button type="text" class="delete-btn" @click="deleteArgument"><i class="fas fa-trash"></i></el-button>
           </div>
         </div>
         <p>{{ userArgument.content }}</p>
@@ -46,39 +23,93 @@
     </div>
 
     <!-- Arguments Display -->
-    <div class="arguments-display">
-      <div class="proposal-section">
-        <h4>Arguments in Favor</h4>
-        <div class="arguments-list">
-          <div v-for="arg in favorArguments" :key="arg.id" class="argument">
-            <div class="argument-header">
-              <span class="argument-author">{{ arg.userEmail }}</span>
-              <span class="argument-date">{{ new Date(arg.created_at).toLocaleDateString() }}</span>
+    <div class="arguments-grid">
+      <div class="argument-column">
+        <div class="argument-section favor">
+          <h4>
+            <i class="fas fa-thumbs-up"></i>
+            Arguments in Favor ({{ favorArguments.length }})
+          </h4>
+          <div class="arguments-list">
+            <div v-for="arg in favorArguments" :key="arg.id" class="argument-card">
+              <div class="argument-header">
+                <span class="argument-author">{{ arg.userEmail }}</span>
+                <span class="argument-date">{{ formatDate(arg.created_at) }}</span>
+              </div>
+              <p class="argument-content">{{ arg.content }}</p>
             </div>
-            <p class="argument-content">{{ arg.content }}</p>
-          </div>
-          <div v-if="!favorArguments.length" class="no-arguments">
-            No arguments in favor yet
+            <div v-if="!favorArguments.length" class="no-arguments">
+              <i class="fas fa-comment-slash"></i>
+              <p>No arguments in favor yet</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="proposal-section">
-        <h4>Arguments Against</h4>
-        <div class="arguments-list">
-          <div v-for="arg in againstArguments" :key="arg.id" class="argument">
-            <div class="argument-header">
-              <span class="argument-author">{{ arg.userEmail }}</span>
-              <span class="argument-date">{{ new Date(arg.created_at).toLocaleDateString() }}</span>
+      <div class="argument-column">
+        <div class="argument-section against">
+          <h4>
+            <i class="fas fa-thumbs-down"></i>
+            Arguments Against ({{ againstArguments.length }})
+          </h4>
+          <div class="arguments-list">
+            <div v-for="arg in againstArguments" :key="arg.id" class="argument-card">
+              <div class="argument-header">
+                <span class="argument-author">{{ arg.userEmail }}</span>
+                <span class="argument-date">{{ formatDate(arg.created_at) }}</span>
+              </div>
+              <p class="argument-content">{{ arg.content }}</p>
             </div>
-            <p class="argument-content">{{ arg.content }}</p>
-          </div>
-          <div v-if="!againstArguments.length" class="no-arguments">
-            No arguments against yet
+            <div v-if="!againstArguments.length" class="no-arguments">
+              <i class="fas fa-comment-slash"></i>
+              <p>No arguments against yet</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Argument Modal -->
+    <el-dialog
+      v-model="showArgumentModal"
+      :title="argumentForm.id ? 'Edit Argument' : 'Add Argument'"
+      width="50%"
+    >
+      <el-form :model="argumentForm" label-position="top">
+        <el-form-item label="Argument Type" required>
+          <el-select 
+            v-model="argumentForm.type" 
+            placeholder="Select argument type"
+            class="argument-type-select"
+          >
+            <el-option label="In Favor" value="favor" />
+            <el-option label="Against" value="against" />
+          </el-select>
+        </el-form-item>
+        
+        <el-form-item label="Your Argument" required>
+          <el-input
+            v-model="argumentForm.content"
+            type="textarea"
+            :rows="4"
+            placeholder="Write your argument..."
+          />
+        </el-form-item>
+      </el-form>
+      
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="cancelEdit">Cancel</el-button>
+          <el-button 
+            type="primary" 
+            @click="handleSubmit"
+            :loading="isLoading"
+          >
+            {{ argumentForm.id ? 'Update' : 'Add' }} Argument
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -108,7 +139,8 @@ export default defineComponent({
         content: '',
         id: null
       },
-      isLoading: false
+      isLoading: false,
+      showArgumentModal: false
     }
   },
   computed: {
@@ -193,6 +225,7 @@ export default defineComponent({
 
         this.resetForm()
         await this.fetchArguments()
+        this.showArgumentModal = false
       } catch (error) {
         ElMessage.error(`Error ${this.argumentForm.id ? 'updating' : 'adding'} argument`)
       } finally {
@@ -207,6 +240,12 @@ export default defineComponent({
         content: currentArg.content,
         id: currentArg.id
       }
+      this.showArgumentModal = true
+    },
+
+    cancelEdit() {
+      this.resetForm()
+      this.showArgumentModal = false
     },
 
     resetForm() {
@@ -232,60 +271,71 @@ export default defineComponent({
       } catch (error) {
         ElMessage.error('Error deleting argument')
       }
+    },
+
+    formatDate(date) {
+      return new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
     }
   }
 })
 </script>
 
 <style scoped>
-.argument-form-section {
-  background: #f8f9fa;
-  padding: 1.5rem;
-  border-radius: 4px;
-  margin-bottom: 2rem;
+.arguments-container {
+  margin-top: 2rem;
 }
 
-.argument-form-section h2 {
-  margin-top: 0;
-  margin-bottom: 1rem;
+.arguments-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
 }
 
-.argument-form {
+.argument-section {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  height: 100%;
+}
+
+.argument-section h4 {
+  margin: 0;
+  padding: 1rem;
+  border-bottom: 1px solid #dcdfe6;
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
 }
 
-.el-select {
-  width: 100%;
+.argument-section.favor h4 i {
+  color: #67C23A;
 }
 
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.arguments-display {
-  display: flex;
-  gap: 2rem;
-}
-
-.proposal-section {
-  flex: 1;
+.argument-section.against h4 i {
+  color: #F56C6C;
 }
 
 .arguments-list {
-  margin-top: 1rem;
+  padding: 1rem;
+  max-height: 600px;
+  overflow-y: auto;
 }
 
-.argument {
-  border-bottom: 1px solid #eee;
-  padding: 1rem 0;
+.argument-card {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
 
-.argument:last-child {
-  border-bottom: none;
+.argument-card:last-child {
+  margin-bottom: 0;
 }
 
 .argument-header {
@@ -293,40 +343,77 @@ export default defineComponent({
   justify-content: space-between;
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
-  color: #666;
+}
+
+.argument-author {
+  color: #409EFF;
+  font-weight: 500;
+}
+
+.argument-date {
+  color: #909399;
 }
 
 .argument-content {
   margin: 0;
-  white-space: pre-wrap;
-}
-
-.argument-author {
-  font-weight: 500;
-  color: #409EFF;
-}
-
-.user-argument {
-  background: #fff;
-  padding: 1rem;
-  border-radius: 4px;
-  border: 1px solid #dcdfe6;
-}
-
-.argument-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.delete-btn {
-  color: #F56C6C;
+  color: #606266;
+  line-height: 1.6;
 }
 
 .no-arguments {
-  color: #909399;
   text-align: center;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 4px;
+  color: #909399;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.no-arguments i {
+  font-size: 1.5rem;
+}
+
+.delete-btn {
+  color: #F56C6C !important; /* Element Plus danger color */
+}
+
+.delete-btn:hover {
+  color: #f78989 !important;
+}
+/* Form Styling */
+.argument-form-section {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.argument-type-select {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .arguments-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .argument-section {
+    margin-bottom: 1rem;
+  }
+
+  .arguments-list {
+    max-height: 400px;
+  }
 }
 </style> 
