@@ -3,37 +3,42 @@
     <Header />
     <div class="proposal-detail-content">
       <template v-if="proposal">
-        <div class="proposal-header">
-          <h1>{{ proposal.name }}</h1>
-          <el-button 
-            v-if="user && user.id === proposal.user_id" 
-            type="primary" 
-            @click="showEditModal = true"
-          >
-            <i class="fas fa-edit"></i> Edit Proposal
-          </el-button>
+
+
+        <div class="argument-counts">
+          <div class="count-box">
+            <div class="count-item favor">
+              <i class="fas fa-thumbs-up"></i>
+              <div class="count-details">
+                <span class="count">{{ favorCount }}</span>
+                <span class="label">In Favor</span>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="count-item against">
+              <i class="fas fa-thumbs-down"></i>
+              <div class="count-details">
+                <span class="count">{{ againstCount }}</span>
+                <span class="label">Against</span>
+              </div>
+            </div>
+          </div>
         </div>
         
-        <div class="argument-counts">
-          <div class="count-item favor">
-            <i class="fas fa-thumbs-up"></i>
-            <div class="count-details">
-              <span class="count">{{ favorCount }}</span>
-              <span class="label">Arguments in Favor</span>
+        <div class="proposal-content-box">
+          <div class="proposal-header">
+            <div class="title-section">
+              <p><b>{{ proposal.name }}</b></p>
+              <p class="description">{{ proposal.description }}</p>
             </div>
+            <el-button 
+              v-if="user && user.id === proposal.user_id" 
+              type="primary" 
+              @click="showEditModal = true"
+            >
+              Edit Proposal
+            </el-button>
           </div>
-          <div class="count-item against">
-            <i class="fas fa-thumbs-down"></i>
-            <div class="count-details">
-              <span class="count">{{ againstCount }}</span>
-              <span class="label">Arguments Against</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="proposal-section">
-          <h3>Description</h3>
-          <p>{{ proposal.description }}</p>
         </div>
 
         <ProposalArguments 
@@ -222,92 +227,71 @@ export default defineComponent({
   margin: 0 auto;
 }
 
-h1 {
-  margin-bottom: 1.5rem;
-  color: #333;
-}
-
-h2 {
-  color: #666;
-  margin-bottom: 1rem;
-}
-
-.proposal-stats {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.proposal-stats .el-button {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 1rem;
-}
-
-.proposal-stats i {
-  font-size: 1.2rem;
-}
-
-.proposal-section {
+.proposal-content-box {
   background: white;
-  padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   margin-bottom: 1.5rem;
 }
 
-.argument-list {
+.proposal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem;
+}
+
+.title-section {
+  flex: 1;
+  margin-right: 1.5rem;
+}
+
+.title-section h3 {
+  margin: 0 0 0.8rem 0;
+  color: #303133;
+  font-size: 1.4rem;
+}
+
+.description {
   margin: 0;
-  padding-left: 20px;
+  color: #606266;
+  line-height: 1.6;
+  white-space: pre-wrap;
 }
 
-.argument-list li {
-  margin-bottom: 0.5rem;
-}
-
-.not-found {
-  text-align: center;
-  font-size: 1.2rem;
-  color: #666;
-  margin-top: 2rem;
-}
-
-
-.login-prompt {
-  text-align: center;
-  color: #666;
-  padding: 1rem;
-  background: #f9f9f9;
-  border-radius: 4px;
-}
-
-.comment-author {
-  font-weight: 500;
-  color: #409EFF;
+.proposal-header .el-button {
+  flex-shrink: 0;
 }
 
 .argument-counts {
+  margin-bottom: 1.5rem;
+}
+
+.count-box {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  align-items: center;
+  background: white;
+  padding: 0.8rem 1.2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  max-width: fit-content;
 }
 
 .count-item {
-  flex: 1;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  gap: 0.5rem;
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background-color: #dcdfe6;
+  margin: 0 1rem;
 }
 
 .count-item i {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
 }
 
 .count-item.favor i {
@@ -321,33 +305,107 @@ h2 {
 .count-details {
   display: flex;
   flex-direction: column;
+  gap: 0.1rem;
 }
 
 .count {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: #333;
+  color: #303133;
+  line-height: 1;
 }
 
 .label {
-  font-size: 0.9rem;
-  color: #666;
+  font-size: 0.75rem;
+  color: #606266;
 }
 
-.proposal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.proposal-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   margin-bottom: 1.5rem;
 }
 
-.proposal-header h1 {
+.proposal-section h3 {
+  color: #303133;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.proposal-section p {
+  color: #606266;
+  line-height: 1.6;
   margin: 0;
+  white-space: pre-wrap;
+}
+
+.not-found {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #909399;
+  margin-top: 4rem;
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Edit button styling */
+.proposal-header .el-button {
+  padding: 0.8rem 1.2rem;
+}
+
+.proposal-header .el-button i {
+  margin-right: 0.5rem;
+}
+
+/* Modal styling */
+:deep(.el-dialog) {
+  border-radius: 8px;
+}
+
+:deep(.el-dialog__header) {
+  padding: 1.5rem;
+  margin-right: 0;
+  border-bottom: 1px solid #dcdfe6;
+}
+
+:deep(.el-dialog__body) {
+  padding: 1.5rem;
+}
+
+:deep(.el-dialog__footer) {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #dcdfe6;
 }
 
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 0.8rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .proposal-detail-content {
+    padding: 1rem;
+  }
+
+  .argument-counts {
+    flex-direction: column;
+  }
+
+  .proposal-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .proposal-header h1 {
+    font-size: 1.5rem;
+  }
 }
 </style> 

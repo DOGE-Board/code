@@ -2,7 +2,7 @@
   <div>
     <!-- Single Form -->
     <div v-if="user" class="argument-form-section">
-      <h3>{{ argumentForm.id ? 'Your Argument' : 'Your Argument' }}</h3>
+      <h4>{{ argumentForm.id ? 'Your Argument' : 'Your Argument' }}</h4>
       <div v-if="!userHasArgument || argumentForm.id" class="argument-form">
         <el-select 
           v-model="argumentForm.type" 
@@ -48,7 +48,7 @@
     <!-- Arguments Display -->
     <div class="arguments-display">
       <div class="proposal-section">
-        <h3>Arguments in Favor</h3>
+        <h4>Arguments in Favor</h4>
         <div class="arguments-list">
           <div v-for="arg in favorArguments" :key="arg.id" class="argument">
             <div class="argument-header">
@@ -64,7 +64,7 @@
       </div>
 
       <div class="proposal-section">
-        <h3>Arguments Against</h3>
+        <h4>Arguments Against</h4>
         <div class="arguments-list">
           <div v-for="arg in againstArguments" :key="arg.id" class="argument">
             <div class="argument-header">
