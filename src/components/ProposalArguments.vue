@@ -151,6 +151,12 @@ export default defineComponent({
 
       this.favorArguments = argumentsWithUserInfo.filter(arg => arg.argument_type === 'favor')
       this.againstArguments = argumentsWithUserInfo.filter(arg => arg.argument_type === 'against')
+      
+      // Emit the counts to parent
+      this.$emit('arguments-updated', {
+        favorCount: this.favorArguments.length,
+        againstCount: this.againstArguments.length
+      })
     },
 
     async handleSubmit() {

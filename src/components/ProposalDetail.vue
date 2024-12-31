@@ -5,6 +5,23 @@
       <template v-if="proposal">
         <h1>{{ proposal.name }}</h1>
         
+        <div class="argument-counts">
+          <div class="count-item favor">
+            <i class="fas fa-thumbs-up"></i>
+            <div class="count-details">
+              <span class="count">{{ favorCount }}</span>
+              <span class="label">Arguments in Favor</span>
+            </div>
+          </div>
+          <div class="count-item against">
+            <i class="fas fa-thumbs-down"></i>
+            <div class="count-details">
+              <span class="count">{{ againstCount }}</span>
+              <span class="label">Arguments Against</span>
+            </div>
+          </div>
+        </div>
+
         <div class="proposal-section">
           <h3>Description</h3>
           <p>{{ proposal.description }}</p>
@@ -13,6 +30,7 @@
         <ProposalArguments 
           :proposal-id="proposal.id"
           :user="user"
+          @arguments-updated="updateCounts"
         />
       </template>
       <div v-else class="not-found">
@@ -39,7 +57,8 @@ export default defineComponent({
   data() {
     return {
       user: null,
-      userVotes: {}
+      favorCount: 0,
+      againstCount: 0
     }
   },
   computed: {
@@ -107,6 +126,11 @@ export default defineComponent({
       } catch (error) {
         ElMessage.error('Error while voting')
       }
+    },
+
+    updateCounts({ favorCount, againstCount }) {
+      this.favorCount = favorCount
+      this.againstCount = againstCount
     }
   }
 })
@@ -189,5 +213,50 @@ h2 {
 .comment-author {
   font-weight: 500;
   color: #409EFF;
+}
+
+.argument-counts {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.count-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.count-item i {
+  font-size: 1.5rem;
+}
+
+.count-item.favor i {
+  color: #67C23A;
+}
+
+.count-item.against i {
+  color: #F56C6C;
+}
+
+.count-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.count {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.label {
+  font-size: 0.9rem;
+  color: #666;
 }
 </style> 

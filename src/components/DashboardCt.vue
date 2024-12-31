@@ -27,6 +27,20 @@
           </template>
         </el-table-column>
         <el-table-column prop="description" label="Proposal Description" />
+        <el-table-column label="Arguments" width="200">
+          <template #default="{ row }">
+            <div class="argument-counts">
+              <div class="count-item">
+                <i class="fas fa-thumbs-up"></i>
+                <span>{{ row.favorCount || 0 }}</span>
+              </div>
+              <div class="count-item">
+                <i class="fas fa-thumbs-down"></i>
+                <span>{{ row.againstCount || 0 }}</span>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
       </el-table>
 
       <!-- Add Proposal Modal -->
@@ -239,5 +253,29 @@ h1 {
 .proposal-link:hover {
   text-decoration: underline;
   cursor: pointer;
+}
+
+.argument-counts {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.count-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.count-item i {
+  font-size: 1rem;
+}
+
+.count-item:first-child i {
+  color: #67C23A;
+}
+
+.count-item:last-child i {
+  color: #F56C6C;
 }
 </style>

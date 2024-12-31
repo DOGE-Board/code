@@ -6,7 +6,12 @@ export const proposals = ref([])
 export const fetchProposals = async () => {
   const { data, error } = await supabase
     .from('proposals')
-    .select('*')
+    .select(`
+      *,
+      proposal_arguments (
+        argument_type
+      )
+    `)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -14,7 +19,14 @@ export const fetchProposals = async () => {
     return
   }
 
-  proposals.value = data
+  proposals.value = data.map(proposal => {
+    const args = proposal.proposal_arguments || []
+    return {
+      ...proposal,
+      favorCount: args.filter(arg => arg.argument_type === 'favor').length,
+      againstCount: args.filter(arg => arg.argument_type === 'against').length
+    }
+  })
 }
 
 export const addProposal = async (proposal) => {
