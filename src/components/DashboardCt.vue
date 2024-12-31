@@ -11,12 +11,17 @@
       
       <el-table 
         v-loading="loading"
-        :data="proposals" 
+        :data="sortedProposals" 
         style="width: 100%" 
         border
       >
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="Proposal Name" width="180">
+        <el-table-column 
+          prop="name" 
+          label="Proposal Name" 
+          width="180"
+          sortable
+        >
           <template #default="{ row }">
             <router-link 
               :to="`/proposal/${row.id}`" 
@@ -98,7 +103,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import Header from './Header.vue'
 import { proposals, fetchProposals, addProposal } from '../data/proposals'
 import { ElMessage } from 'element-plus'
@@ -116,6 +121,22 @@ const newProposal = ref({
 })
 
 const user = ref(null)
+
+const sortOrder = ref('ascending')
+const sortField = ref('name')
+
+const sortedProposals = computed(() => {
+  return [...proposals.value].sort((a, b) => {
+    if (sortField.value === 'name') {
+      const nameA = a.name.toLowerCase()
+      const nameB = b.name.toLowerCase()
+      return sortOrder.value === 'ascending' 
+        ? nameA.localeCompare(nameB)
+        : nameB.localeCompare(nameA)
+    }
+    return 0
+  })
+})
 
 onMounted(async () => {
   const { data: { user: currentUser } } = await supabase.auth.getUser()
