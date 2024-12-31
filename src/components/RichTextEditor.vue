@@ -1,5 +1,5 @@
 <template>
-  <div class="rich-text-editor">
+  <div class="rich-text-editor el-textarea">
     <div class="editor-toolbar">
       <el-button-group>
         <el-button @click="execCommand('bold')" :class="{ active: isActive('bold') }">

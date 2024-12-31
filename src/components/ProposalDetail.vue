@@ -29,7 +29,7 @@
           <div class="proposal-header">
             <div class="title-section">
               <p><b>{{ proposal.name }}</b></p>
-              <p class="description">{{ proposal.description }}</p>
+              <div class="description" v-html="sanitizedDescription"></div>
             </div>
             <el-button 
               v-if="user && user.id === proposal.user_id" 
@@ -91,6 +91,7 @@ import { proposals, fetchProposals } from '../data/proposals'
 import { supabase } from '../supabase'
 import { ElMessage } from 'element-plus'
 import RichTextEditor from './RichTextEditor.vue'
+import DOMPurify from 'dompurify'
 
 export default defineComponent({
   name: 'ProposalDetail',
@@ -114,6 +115,9 @@ export default defineComponent({
   computed: {
     proposal() {
       return proposals.value.find(p => p.id === parseInt(this.$route.params.id))
+    },
+    sanitizedDescription() {
+      return this.proposal ? DOMPurify.sanitize(this.proposal.description) : ''
     }
   },
   async mounted() {
@@ -257,7 +261,22 @@ export default defineComponent({
   margin: 0;
   color: #606266;
   line-height: 1.6;
-  white-space: pre-wrap;
+
+  :deep(p) {
+    margin: 0 0 1em;
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  :deep(ul, ol) {
+    padding-left: 2em;
+    margin: 0.5em 0;
+  }
+
+  :deep(li) {
+    margin-bottom: 0.3em;
+  }
 }
 
 .proposal-header .el-button {

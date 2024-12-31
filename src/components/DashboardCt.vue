@@ -26,7 +26,11 @@
             </router-link>
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="Proposal Description" />
+        <el-table-column prop="description" label="Proposal Description">
+          <template #default="{ row }">
+            {{ stripHtmlAndTrim(row.description) }}
+          </template>
+        </el-table-column>
         <el-table-column label="Arguments" width="200">
           <template #default="{ row }">
             <div class="argument-counts">
@@ -168,6 +172,13 @@ const handleAddProposal = async () => {
     ElMessage.error('Error creating proposal')
     console.error(error)
   }
+}
+
+const stripHtmlAndTrim = (html) => {
+  // Remove HTML tags
+  const text = html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '')
+  // Trim to 250 characters and add ellipsis if needed
+  return text.length > 250 ? text.slice(0, 250) + '...' : text
 }
 </script>
 
