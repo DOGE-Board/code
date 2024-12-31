@@ -3,7 +3,16 @@
     <Header />
     <div class="proposal-detail-content">
       <template v-if="proposal">
-        <h1>{{ proposal.name }}</h1>
+        <div class="proposal-header">
+          <h1>{{ proposal.name }}</h1>
+          <el-button 
+            v-if="user && user.id === proposal.user_id" 
+            type="primary" 
+            @click="showEditModal = true"
+          >
+            <i class="fas fa-edit"></i> Edit Proposal
+          </el-button>
+        </div>
         
         <div class="argument-counts">
           <div class="count-item favor">
@@ -32,6 +41,36 @@
           :user="user"
           @arguments-updated="updateCounts"
         />
+
+        <!-- Add Edit Modal -->
+        <el-dialog
+          v-model="showEditModal"
+          title="Edit Proposal"
+          width="50%"
+        >
+          <el-form :model="editForm" label-position="top">
+            <el-form-item label="Proposal Name" required>
+              <el-input v-model="editForm.name" />
+            </el-form-item>
+            
+            <el-form-item label="Description" required>
+              <el-input
+                v-model="editForm.description"
+                type="textarea"
+                :rows="3"
+              />
+            </el-form-item>
+          </el-form>
+          
+          <template #footer>
+            <span class="dialog-footer">
+              <el-button @click="showEditModal = false">Cancel</el-button>
+              <el-button type="primary" @click="handleEditProposal">
+                Update Proposal
+              </el-button>
+            </span>
+          </template>
+        </el-dialog>
       </template>
       <div v-else class="not-found">
         Proposal not found
@@ -58,7 +97,12 @@ export default defineComponent({
     return {
       user: null,
       favorCount: 0,
-      againstCount: 0
+      againstCount: 0,
+      showEditModal: false,
+      editForm: {
+        name: '',
+        description: ''
+      }
     }
   },
   computed: {
@@ -70,13 +114,11 @@ export default defineComponent({
     const { data: { user: currentUser } } = await supabase.auth.getUser()
     this.user = currentUser
     
-    if (currentUser) {
-      await this.fetchUserVotes()
-    }
+    await fetchProposals()
     
-    await Promise.all([
-      fetchProposals()
-    ])
+    if (this.proposal) {
+      this.initEditForm()
+    }
   },
   methods: {
     async fetchUserVotes() {
@@ -131,6 +173,38 @@ export default defineComponent({
     updateCounts({ favorCount, againstCount }) {
       this.favorCount = favorCount
       this.againstCount = againstCount
+    },
+
+    initEditForm() {
+      this.editForm.name = this.proposal.name
+      this.editForm.description = this.proposal.description
+    },
+
+    async handleEditProposal() {
+      if (!this.editForm.name.trim() || !this.editForm.description.trim()) {
+        ElMessage.error('Name and description are required')
+        return
+      }
+
+      try {
+        const { error } = await supabase
+          .from('proposals')
+          .update({ 
+            name: this.editForm.name.trim(),
+            description: this.editForm.description.trim()
+          })
+          .eq('id', this.proposal.id)
+          .eq('user_id', this.user.id)
+
+        if (error) throw error
+
+        await fetchProposals()
+        this.showEditModal = false
+        ElMessage.success('Proposal updated successfully')
+      } catch (error) {
+        ElMessage.error('Error updating proposal')
+        console.error(error)
+      }
     }
   }
 })
@@ -258,5 +332,22 @@ h2 {
 .label {
   font-size: 0.9rem;
   color: #666;
+}
+
+.proposal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.proposal-header h1 {
+  margin: 0;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 </style> 
