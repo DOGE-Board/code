@@ -58,13 +58,13 @@
             <el-input v-model="newProposal.name" />
           </el-form-item>
           
+
           <el-form-item label="Description" required>
-            <el-input
-              v-model="newProposal.description"
-              type="textarea"
-              :rows="3"
-            />
-          </el-form-item>
+              <RichTextEditor
+                v-model="newProposal.description"
+                placeholder="Enter proposal description..."
+              />
+            </el-form-item>
 
           <el-form-item label="Initial Argument">
             <el-select 
@@ -102,6 +102,7 @@ import { ref, onMounted } from 'vue'
 import Header from './Header.vue'
 import { proposals, fetchProposals, addProposal } from '../data/proposals'
 import { ElMessage } from 'element-plus'
+import RichTextEditor from './RichTextEditor.vue'
 import { supabase } from '../supabase'
 
 const showAddModal = ref(false)
