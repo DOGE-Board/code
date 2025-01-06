@@ -27,7 +27,7 @@
       </div>
 
       <p class="terms">
-          By continuing, you agree to Legal AI Studio's 
+          By continuing, you agree to DOGE-Board's
           <router-link to="/terms-of-service">Terms of Service</router-link> and 
           <router-link to="/privacy-policy">Privacy Policy</router-link>
       </p>
